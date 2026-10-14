@@ -16,4 +16,4 @@ COPY src/. .
 
 # Port 3000 for our Express server 
 EXPOSE 3000
-ENTRYPOINT ["npm", "start"]
+ENTRYPOINT ["node", "bootstrap.mjs"]
