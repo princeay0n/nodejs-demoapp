@@ -1,0 +1,53 @@
+
+name: Test Azure AKS Access
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  verify-aks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure login using OIDC
+        uses: azure/login@v3
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Retrieve demo AKS credentials
+        run: |
+          mkdir -p "$RUNNER_TEMP/mongotask"
+          az aks get-credentials \
+            --resource-group prince.saha-RG \
+            --name test-prince-aks-dev \
+            --file "$RUNNER_TEMP/mongotask/kubeconfig" \
+            --overwrite-existing
+
+      - name: Verify demo cluster and namespace permissions
+        env:
+          KUBECONFIG: ${{ runner.temp }}/mongotask/kubeconfig
+        run: |
+          set -euo pipefail
+
+          kubectl config current-context
+
+          kubectl --context test-prince-aks-dev \
+            -n mongotask-dev \
+            auth can-i get deployments
+
+          kubectl --context test-prince-aks-dev \
+            -n mongotask-dev \
+            auth can-i patch deployments
+
+          kubectl --context test-prince-aks-dev \
+            -n mongotask-dev \
+            auth can-i create secrets
