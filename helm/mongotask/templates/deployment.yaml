@@ -1,0 +1,47 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+
+spec:
+  replicas: {{ .Values.replicaCount }}
+
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        azure.workload.identity/use: "true"
+
+    spec:
+      serviceAccountName: mongotask-app
+
+      containers:
+        - name: nodejs
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+
+          env:
+            - name: NODE_EXTRA_CA_CERTS
+              value: /etc/mongodb-certs/mongo-ca.crt
+
+          volumeMounts:
+            - name: mongodb-ca
+              mountPath: /etc/mongodb-certs
+              readOnly: true
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+      volumes:
+        - name: mongodb-ca
+          configMap:
+            name: {{ .Release.Name }}-mongodb-ca

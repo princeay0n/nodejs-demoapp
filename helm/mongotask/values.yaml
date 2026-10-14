@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: testprinceacr1416653497.azurecr.io/nodejs-demoapp
+  tag: "b6e86bd78d347b488ec3789b8e94b1a078e91b78"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

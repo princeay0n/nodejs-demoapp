@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-mongodb-ca
+data:
+  mongo-ca.crt: |
+{{ .Files.Get "certs/mongo-ca.crt" | indent 4 }}
